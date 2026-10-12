@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'services/auth_service.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -68,6 +70,7 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> {
+  final AuthService _authService = AuthService();
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -104,15 +107,38 @@ class _AuthPageState extends State<AuthPage> {
     AuthView.forgotPassword => 'Send reset instructions',
   };
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Form validated. Connect an authentication service to continue.',
-        ),
-      ),
-    );
+
+    AuthResult result;
+
+    switch (_view) {
+      case AuthView.signIn:
+        result = await _authService.signIn(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+        break;
+
+      case AuthView.createAccount:
+        result = await _authService.createAccount(
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+        break;
+
+      case AuthView.forgotPassword:
+        result = await _authService.resetPassword(
+          email: _emailController.text.trim(),
+        );
+        break;
+    }
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(result.message)));
   }
 
   void _setView(AuthView view) {
