@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frm_app/screens/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -105,6 +106,13 @@ class _AuthPageState extends State<AuthPage> {
   };
 
   void _submit() {
+    if (_view == AuthView.signIn) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(builder: (_) => const HomeScreen()),
+      );
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
