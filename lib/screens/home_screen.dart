@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+import '../models/home_service_type.dart';
+
+export '../l10n/app_localizations.dart' show HomeLanguage;
+export '../models/home_service_type.dart';
+
 /// First Refuge Ministries' primary brand colors.
 abstract final class HomeColors {
   static const missionBlue = Color(0xFF2596BE);
@@ -11,17 +17,6 @@ abstract final class HomeColors {
   static const deepBlue = Color(0xFF126785);
   static const mutedText = Color(0xFF52616B);
   static const border = Color(0xFFD5E9F1);
-}
-
-enum HomeLanguage { english, spanish }
-
-enum HomeServiceType {
-  medicalCare,
-  dentalCare,
-  counseling,
-  foodPantry,
-  volunteerOpportunities,
-  myAppointments,
 }
 
 /// A reusable Home Screen that owns only local presentation state.
@@ -62,14 +57,14 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  _HomeCopy get _copy => _copies[_language]!;
+  AppLocalizations get _copy => AppLocalizations.of(_language);
 
   List<_ServiceDefinition> get _filteredServices {
     final query = _normalize(_query);
     if (query.isEmpty) return _services;
 
     return _services.where((service) {
-      final localized = service.copy[_language]!;
+      final localized = _copy.services[service.type]!;
       final searchableText = <String>[
         localized.title,
         localized.subtitle,
@@ -188,7 +183,7 @@ class _HomeHeader extends StatelessWidget {
     required this.onLanguageChanged,
   });
 
-  final _HomeCopy copy;
+  final AppLocalizations copy;
   final HomeLanguage language;
   final ValueChanged<HomeLanguage> onLanguageChanged;
 
@@ -218,78 +213,54 @@ class _HomeHeader extends StatelessWidget {
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 900),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final textScale = MediaQuery.textScalerOf(context)
-                          .scale(1);
-                      final stackControls =
-                          constraints.maxWidth < 390 || textScale > 1.25;
-
-                      final logo = Semantics(
-                        label: copy.logoSemantics,
-                        image: true,
-                        child: Container(
-                          constraints: const BoxConstraints(maxWidth: 285),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: HomeColors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: HomeColors.missionBlue.withValues(
-                                alpha: 0.45,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Semantics(
+                            label: copy.logoSemantics,
+                            image: true,
+                            child: Container(
+                              constraints: const BoxConstraints(maxWidth: 285),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: HomeColors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: HomeColors.missionBlue.withValues(
+                                    alpha: 0.45,
+                                  ),
+                                ),
+                              ),
+                              child: Image.asset(
+                                'assets/logo.jpg',
+                                height: 42,
+                                fit: BoxFit.contain,
+                                excludeFromSemantics: true,
+                                errorBuilder: (_, _, _) => Text(
+                                  'First Refuge Ministries',
+                                  style: Theme.of(context).textTheme.titleLarge
+                                      ?.copyWith(
+                                        color: HomeColors.darkCharcoal,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                ),
                               ),
                             ),
                           ),
-                          child: Image.asset(
-                            'assets/logo.jpg',
-                            height: 42,
-                            fit: BoxFit.contain,
-                            excludeFromSemantics: true,
-                            errorBuilder: (_, _, _) => Text(
-                              'First Refuge Ministries',
-                              style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(
-                                    color: HomeColors.darkCharcoal,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                            ),
-                          ),
                         ),
-                      );
-
-                      final selector = _LanguageSelector(
+                      ),
+                      const SizedBox(width: 16),
+                      _LanguageSelector(
                         language: language,
                         copy: copy,
                         onChanged: onLanguageChanged,
-                      );
-
-                      if (stackControls) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            logo,
-                            const SizedBox(height: 16),
-                            selector,
-                          ],
-                        );
-                      }
-
-                      return Row(
-                        children: [
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: logo,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          selector,
-                        ],
-                      );
-                    },
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -330,84 +301,100 @@ class _LanguageSelector extends StatelessWidget {
   });
 
   final HomeLanguage language;
-  final _HomeCopy copy;
+  final AppLocalizations copy;
   final ValueChanged<HomeLanguage> onChanged;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      container: true,
       label: copy.languageLabel,
-      child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: HomeColors.white.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: HomeColors.white.withValues(alpha: 0.18)),
-        ),
-        child: Wrap(
-          spacing: 0,
-          runSpacing: 4,
-          children: [
-            _LanguageOption(
-              key: const Key('language-en'),
-              label: 'English',
-              selected: language == HomeLanguage.english,
-              onTap: () => onChanged(HomeLanguage.english),
+      button: true,
+      child: PopupMenuButton<HomeLanguage>(
+        key: const Key('language-selector'),
+        tooltip: copy.languageLabel,
+        offset: const Offset(0, 48),
+        onSelected: onChanged,
+        itemBuilder: (context) => [
+          PopupMenuItem(
+            key: const Key('language-en'),
+            value: HomeLanguage.english,
+            child: Row(
+              children: [
+                _LanguageFlag(
+                  assetName: 'assets/usFlag.png',
+                  imageKey: const Key('language-option-flag-en'),
+                  size: 26,
+                ),
+                const SizedBox(width: 12),
+                const Text('English'),
+                if (language == HomeLanguage.english) ...[
+                  const Spacer(),
+                  const Icon(Icons.check, size: 18),
+                ],
+              ],
             ),
-            _LanguageOption(
-              key: const Key('language-es'),
-              label: 'Español',
-              selected: language == HomeLanguage.spanish,
-              onTap: () => onChanged(HomeLanguage.spanish),
+          ),
+          PopupMenuItem(
+            key: const Key('language-es'),
+            value: HomeLanguage.spanish,
+            child: Row(
+              children: [
+                _LanguageFlag(
+                  assetName: 'assets/mexFlag.png',
+                  imageKey: const Key('language-option-flag-es'),
+                  size: 26,
+                ),
+                const SizedBox(width: 12),
+                const Text('Español'),
+                if (language == HomeLanguage.spanish) ...[
+                  const Spacer(),
+                  const Icon(Icons.check, size: 18),
+                ],
+              ],
             ),
-          ],
+          ),
+        ],
+        child: Container(
+          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: HomeColors.white.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: HomeColors.white.withValues(alpha: 0.18)),
+          ),
+          child: _LanguageFlag(
+            assetName: language == HomeLanguage.english
+                ? 'assets/usFlag.png'
+                : 'assets/mexFlag.png',
+            imageKey: const Key('language-selected-flag'),
+            size: 28,
+          ),
         ),
       ),
     );
   }
 }
 
-class _LanguageOption extends StatelessWidget {
-  const _LanguageOption({
-    super.key,
-    required this.label,
-    required this.selected,
-    required this.onTap,
+class _LanguageFlag extends StatelessWidget {
+  const _LanguageFlag({
+    required this.assetName,
+    required this.imageKey,
+    required this.size,
   });
 
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
+  final String assetName;
+  final Key imageKey;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      selected: selected,
-      button: true,
-      child: Material(
-        color: selected ? HomeColors.missionBlue : Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(10),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 44, minWidth: 76),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
-              child: Center(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    color: HomeColors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
+    return ClipOval(
+      child: Image.asset(
+        assetName,
+        key: imageKey,
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
       ),
     );
   }
@@ -416,7 +403,7 @@ class _LanguageOption extends StatelessWidget {
 class _WelcomeSection extends StatelessWidget {
   const _WelcomeSection({required this.copy});
 
-  final _HomeCopy copy;
+  final AppLocalizations copy;
 
   @override
   Widget build(BuildContext context) {
@@ -468,7 +455,7 @@ class _WelcomeSection extends StatelessWidget {
 class _ServicesHeading extends StatelessWidget {
   const _ServicesHeading({required this.copy, required this.resultCount});
 
-  final _HomeCopy copy;
+  final AppLocalizations copy;
   final int resultCount;
 
   @override
@@ -511,7 +498,7 @@ class _SearchField extends StatelessWidget {
   });
 
   final TextEditingController controller;
-  final _HomeCopy copy;
+  final AppLocalizations copy;
   final ValueChanged<String> onChanged;
   final VoidCallback onClear;
 
@@ -623,7 +610,8 @@ class _ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final serviceCopy = service.copy[language]!;
+    final serviceCopy =
+        AppLocalizations.of(language).services[service.type]!;
     final textTheme = Theme.of(context).textTheme;
 
     return Semantics(
@@ -708,7 +696,7 @@ class _ServiceCard extends StatelessWidget {
 class _EmptyState extends StatelessWidget {
   const _EmptyState({super.key, required this.copy});
 
-  final _HomeCopy copy;
+  final AppLocalizations copy;
 
   @override
   Widget build(BuildContext context) {
@@ -752,7 +740,7 @@ class _EmptyState extends StatelessWidget {
 class _SupportNote extends StatelessWidget {
   const _SupportNote({required this.copy});
 
-  final _HomeCopy copy;
+  final AppLocalizations copy;
 
   @override
   Widget build(BuildContext context) {
@@ -764,7 +752,7 @@ class _SupportNote extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const Icon(
             Icons.favorite_rounded,
@@ -788,117 +776,22 @@ class _SupportNote extends StatelessWidget {
   }
 }
 
-class _HomeCopy {
-  const _HomeCopy({
-    required this.logoSemantics,
-    required this.languageLabel,
-    required this.eyebrow,
-    required this.heading,
-    required this.welcome,
-    required this.servicesHeading,
-    required this.serviceSingular,
-    required this.servicePlural,
-    required this.searchHint,
-    required this.clearSearch,
-    required this.emptyTitle,
-    required this.emptyBody,
-    required this.comingSoon,
-    required this.openService,
-    required this.supportNote,
-  });
-
-  final String logoSemantics;
-  final String languageLabel;
-  final String eyebrow;
-  final String heading;
-  final String welcome;
-  final String servicesHeading;
-  final String serviceSingular;
-  final String servicePlural;
-  final String searchHint;
-  final String clearSearch;
-  final String emptyTitle;
-  final String emptyBody;
-  final String comingSoon;
-  final String openService;
-  final String supportNote;
-
-  String resultCount(int count) =>
-      '$count ${count == 1 ? serviceSingular : servicePlural}';
-}
-
-class _ServiceCopy {
-  const _ServiceCopy(this.title, this.subtitle);
-
-  final String title;
-  final String subtitle;
-}
-
 class _ServiceDefinition {
   const _ServiceDefinition({
     required this.type,
     required this.icon,
-    required this.copy,
     required this.keywords,
   });
 
   final HomeServiceType type;
   final IconData icon;
-  final Map<HomeLanguage, _ServiceCopy> copy;
   final List<String> keywords;
 }
-
-const _copies = <HomeLanguage, _HomeCopy>{
-  HomeLanguage.english: _HomeCopy(
-    logoSemantics: 'First Refuge Ministries',
-    languageLabel: 'Choose language',
-    eyebrow: 'RELIEF  •  AID  •  CARE',
-    heading: 'How can we help you today?',
-    welcome: 'Compassionate care and practical support for our Denton County neighbors—right when you need it.',
-    servicesHeading: 'Find support',
-    serviceSingular: 'service',
-    servicePlural: 'services',
-    searchHint: 'Search services',
-    clearSearch: 'Clear search',
-    emptyTitle: 'No services found',
-    emptyBody: 'Try “medical,” “food,” or “appointments.”',
-    comingSoon: 'This service screen will be connected soon.',
-    openService: 'Open service',
-    supportNote: 'You are welcome here. Explore a service to find the care and support you need.',
-  ),
-  HomeLanguage.spanish: _HomeCopy(
-    logoSemantics: 'First Refuge Ministries',
-    languageLabel: 'Elegir idioma',
-    eyebrow: 'ALIVIO  •  AYUDA  •  CUIDADO',
-    heading: '¿Cómo podemos ayudarle hoy?',
-    welcome: 'Atención compasiva y apoyo práctico para nuestros vecinos del condado de Denton, justo cuando lo necesitan.',
-    servicesHeading: 'Encuentre apoyo',
-    serviceSingular: 'servicio',
-    servicePlural: 'servicios',
-    searchHint: 'Buscar servicios',
-    clearSearch: 'Borrar búsqueda',
-    emptyTitle: 'No encontramos servicios',
-    emptyBody: 'Pruebe “médico”, “alimentos” o “citas”.',
-    comingSoon: 'Esta pantalla de servicio se conectará pronto.',
-    openService: 'Abrir servicio',
-    supportNote: 'Usted es bienvenido aquí. Explore un servicio para encontrar la atención y el apoyo que necesita.',
-  ),
-};
 
 const _services = <_ServiceDefinition>[
   _ServiceDefinition(
     type: HomeServiceType.medicalCare,
     icon: Icons.medical_services_rounded,
-    copy: {
-      HomeLanguage.english: _ServiceCopy(
-        'Medical Care',
-        'Compassionate health services for our community.',
-      ),
-      HomeLanguage.spanish: _ServiceCopy(
-        'Atención médica',
-        'Servicios de salud compasivos para nuestra comunidad.',
-      ),
-    },
     keywords: [
       'medical',
       'health',
@@ -914,16 +807,6 @@ const _services = <_ServiceDefinition>[
   _ServiceDefinition(
     type: HomeServiceType.dentalCare,
     icon: Icons.health_and_safety_rounded,
-    copy: {
-      HomeLanguage.english: _ServiceCopy(
-        'Dental Care',
-        'Essential oral care to help you smile with confidence.',
-      ),
-      HomeLanguage.spanish: _ServiceCopy(
-        'Atención dental',
-        'Cuidado bucal esencial para sonreír con confianza.',
-      ),
-    },
     keywords: [
       'dental',
       'dentist',
@@ -938,16 +821,6 @@ const _services = <_ServiceDefinition>[
   _ServiceDefinition(
     type: HomeServiceType.counseling,
     icon: Icons.forum_rounded,
-    copy: {
-      HomeLanguage.english: _ServiceCopy(
-        'Counseling',
-        'A caring space for emotional and spiritual support.',
-      ),
-      HomeLanguage.spanish: _ServiceCopy(
-        'Consejería',
-        'Un espacio de apoyo emocional y espiritual.',
-      ),
-    },
     keywords: [
       'counseling',
       'counselling',
@@ -963,16 +836,6 @@ const _services = <_ServiceDefinition>[
   _ServiceDefinition(
     type: HomeServiceType.foodPantry,
     icon: Icons.shopping_basket_rounded,
-    copy: {
-      HomeLanguage.english: _ServiceCopy(
-        'Food Pantry',
-        'Fresh groceries and pantry staples for your household.',
-      ),
-      HomeLanguage.spanish: _ServiceCopy(
-        'Despensa de alimentos',
-        'Alimentos frescos y básicos para su hogar.',
-      ),
-    },
     keywords: [
       'food',
       'pantry',
@@ -987,16 +850,6 @@ const _services = <_ServiceDefinition>[
   _ServiceDefinition(
     type: HomeServiceType.volunteerOpportunities,
     icon: Icons.volunteer_activism_rounded,
-    copy: {
-      HomeLanguage.english: _ServiceCopy(
-        'Volunteer Opportunities',
-        'Share your time and talents with neighbors in need.',
-      ),
-      HomeLanguage.spanish: _ServiceCopy(
-        'Oportunidades de voluntariado',
-        'Comparta su tiempo y talento con quienes lo necesitan.',
-      ),
-    },
     keywords: [
       'volunteer',
       'serve',
@@ -1011,16 +864,6 @@ const _services = <_ServiceDefinition>[
   _ServiceDefinition(
     type: HomeServiceType.myAppointments,
     icon: Icons.calendar_month_rounded,
-    copy: {
-      HomeLanguage.english: _ServiceCopy(
-        'My Appointments',
-        'View and manage your upcoming visits in one place.',
-      ),
-      HomeLanguage.spanish: _ServiceCopy(
-        'Mis citas',
-        'Vea y administre sus próximas visitas en un solo lugar.',
-      ),
-    },
     keywords: [
       'appointment',
       'appointments',

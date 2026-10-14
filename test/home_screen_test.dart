@@ -1,8 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frm_app/l10n/app_localizations.dart';
 import 'package:frm_app/screens/home_screen.dart';
 
 void main() {
+  test('app localizations are available by language across the app', () {
+    final english = AppLocalizations.of(HomeLanguage.english);
+    final spanish = AppLocalizations.of(HomeLanguage.spanish);
+
+    expect(english.heading, 'How can we help you today?');
+    expect(
+      spanish.services[HomeServiceType.medicalCare]?.title,
+      'Atención médica',
+    );
+    expect(spanish.resultCount(2), '2 servicios');
+  });
+
   Widget buildHome({ValueChanged<HomeServiceType>? onServiceSelected}) {
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
@@ -65,6 +78,50 @@ void main() {
     setViewport(tester, const Size(800, 1200));
     await tester.pumpWidget(buildHome());
 
+    expect(find.byKey(const Key('language-selector')), findsOneWidget);
+    expect(
+      (tester
+                  .widget<Image>(
+                    find.byKey(const Key('language-selected-flag')),
+                  )
+                  .image
+              as AssetImage)
+          .assetName,
+      'assets/usFlag.png',
+    );
+    final selectedFlag = tester.widget<Image>(
+      find.byKey(const Key('language-selected-flag')),
+    );
+    expect(selectedFlag.width, selectedFlag.height);
+    expect(selectedFlag.fit, BoxFit.contain);
+    expect(
+      find.ancestor(
+        of: find.byKey(const Key('language-selected-flag')),
+        matching: find.byType(ClipOval),
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const Key('language-selector')));
+    await tester.pumpAndSettle();
+    expect(find.text('English'), findsOneWidget);
+    expect(find.text('Español'), findsOneWidget);
+    expect(find.byKey(const Key('language-option-flag-en')), findsOneWidget);
+    expect(find.byKey(const Key('language-option-flag-es')), findsOneWidget);
+    expect(
+      find.ancestor(
+        of: find.byKey(const Key('language-option-flag-en')),
+        matching: find.byType(ClipOval),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.ancestor(
+        of: find.byKey(const Key('language-option-flag-es')),
+        matching: find.byType(ClipOval),
+      ),
+      findsOneWidget,
+    );
+
     await tester.tap(find.byKey(const Key('language-es')));
     await tester.pumpAndSettle();
 
@@ -72,7 +129,19 @@ void main() {
     expect(find.text('Atención médica'), findsOneWidget);
     expect(find.text('Despensa de alimentos'), findsOneWidget);
     expect(find.text('6 servicios'), findsOneWidget);
+    expect(
+      (tester
+                  .widget<Image>(
+                    find.byKey(const Key('language-selected-flag')),
+                  )
+                  .image
+              as AssetImage)
+          .assetName,
+      'assets/mexFlag.png',
+    );
 
+    await tester.tap(find.byKey(const Key('language-selector')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('language-en')));
     await tester.pumpAndSettle();
     expect(find.text('How can we help you today?'), findsOneWidget);
