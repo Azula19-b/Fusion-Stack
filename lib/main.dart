@@ -9,11 +9,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const navy = Color(0xFF14243A);
     const blue = Color(0xFF315FEA);
 
     return MaterialApp(
-      title: 'Welcome',
+      title: 'Welcome to the Testing Home Page',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
@@ -23,429 +22,272 @@ class MyApp extends StatelessWidget {
           surface: Colors.white,
         ),
         scaffoldBackgroundColor: const Color(0xFFF4F7FC),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: const Color(0xFFF7F9FC),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 17,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: blue, width: 1.5),
-          ),
-        ),
-        textTheme: const TextTheme(
-          headlineMedium: TextStyle(
-            color: navy,
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.7,
-          ),
-          bodyMedium: TextStyle(color: Color(0xFF68768A)),
-        ),
       ),
-      home: const AuthPage(),
+      home: const HomePage(),
     );
   }
 }
 
-enum AuthView { signIn, createAccount, forgotPassword }
-
-class AuthPage extends StatefulWidget {
-  const AuthPage({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  State<AuthPage> createState() => _AuthPageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _AuthPageState extends State<AuthPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  AuthView _view = AuthView.signIn;
-  bool _hidePassword = true;
+class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
-  }
-
-  String get _title => switch (_view) {
-    AuthView.signIn => 'Welcome back',
-    AuthView.createAccount => 'Create your account',
-    AuthView.forgotPassword => 'Reset your password',
-  };
-
-  String get _subtitle => switch (_view) {
-    AuthView.signIn => 'Sign in to continue to your account.',
-    AuthView.createAccount => 'A few details and you’ll be ready to go.',
-    AuthView.forgotPassword =>
-      'Enter the email address associated with your account.',
-  };
-
-  String get _submitLabel => switch (_view) {
-    AuthView.signIn => 'Sign in',
-    AuthView.createAccount => 'Create account',
-    AuthView.forgotPassword => 'Send reset instructions',
-  };
-
-  void _submit() {
-    if (!_formKey.currentState!.validate()) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Form validated. Connect an authentication service to continue.',
-        ),
-      ),
-    );
-  }
-
-  void _setView(AuthView view) {
-    setState(() {
-      _view = view;
-      _formKey.currentState?.reset();
-    });
-  }
+  static const _titles = ['Home', 'Explore', 'Appointments', 'Calendar', 'Profile'];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFF7F9FF), Color(0xFFEAF0FF)],
+      appBar: AppBar(
+        title: Text(_titles[_selectedIndex]),
+        actions: [
+          IconButton(
+            tooltip: 'Notifications',
+            onPressed: () {},
+            icon: const Icon(Icons.notifications_none_rounded),
           ),
-        ),
-        child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 22,
-                  vertical: 28,
-                ),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 840),
-                      child: Card(
-                        elevation: 12,
-                        shadowColor: const Color(0x1A1C3470),
-                        color: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          side: const BorderSide(color: Color(0xFFEAF0F7)),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(30, 32, 30, 28),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(1),
-                                child: Image.asset(
-                                  'assets/logo.jpg',
-                                  width: 323,
-                                  height: 58,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      Container(
-                                        width: 68,
-                                        height: 68,
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFEEF2FF),
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.auto_awesome_rounded,
-                                          color: Color(0xFF315FEA),
-                                          size: 32,
-                                        ),
-                                      ),
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              Text(
-                                _title,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineMedium,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                _subtitle,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  height: 1.5,
-                                ),
-                              ),
-                              const SizedBox(height: 28),
-                              if (_view != AuthView.forgotPassword)
-                                _buildViewSelector(),
-                              const SizedBox(height: 22),
-                              Form(
-                                key: _formKey,
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    if (_view == AuthView.createAccount) ...[
-                                      _fieldLabel('Full name'),
-                                      TextFormField(
-                                        controller: _nameController,
-                                        textCapitalization:
-                                            TextCapitalization.words,
-                                        textInputAction: TextInputAction.next,
-                                        decoration: const InputDecoration(
-                                          hintText: 'Your name',
-                                          prefixIcon: Icon(
-                                            Icons.person_outline_rounded,
-                                          ),
-                                        ),
-                                        validator: (value) =>
-                                            value == null ||
-                                                value.trim().isEmpty
-                                            ? 'Enter your name'
-                                            : null,
-                                      ),
-                                      const SizedBox(height: 18),
-                                    ],
-                                    _fieldLabel('Email address'),
-                                    TextFormField(
-                                      controller: _emailController,
-                                      keyboardType: TextInputType.emailAddress,
-                                      textInputAction:
-                                          _view == AuthView.forgotPassword
-                                          ? TextInputAction.done
-                                          : TextInputAction.next,
-                                      decoration: const InputDecoration(
-                                        hintText: 'you@example.com',
-                                        prefixIcon: Icon(
-                                          Icons.mail_outline_rounded,
-                                        ),
-                                      ),
-                                      validator: (value) {
-                                        final email = value?.trim() ?? '';
-                                        if (email.isEmpty) {
-                                          return 'Enter your email address';
-                                        }
-                                        if (!RegExp(
-                                          r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-                                        ).hasMatch(email)) {
-                                          return 'Enter a valid email address';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                    if (_view != AuthView.forgotPassword) ...[
-                                      const SizedBox(height: 18),
-                                      _fieldLabel('Password'),
-                                      TextFormField(
-                                        controller: _passwordController,
-                                        obscureText: _hidePassword,
-                                        textInputAction:
-                                            _view == AuthView.signIn
-                                            ? TextInputAction.done
-                                            : TextInputAction.next,
-                                        decoration: InputDecoration(
-                                          hintText: 'Enter your password',
-                                          prefixIcon: const Icon(
-                                            Icons.lock_outline_rounded,
-                                          ),
-                                          suffixIcon: IconButton(
-                                            tooltip: _hidePassword
-                                                ? 'Show password'
-                                                : 'Hide password',
-                                            onPressed: () => setState(
-                                              () => _hidePassword =
-                                                  !_hidePassword,
-                                            ),
-                                            icon: Icon(
-                                              _hidePassword
-                                                  ? Icons.visibility_outlined
-                                                  : Icons
-                                                        .visibility_off_outlined,
-                                            ),
-                                          ),
-                                        ),
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return 'Enter your password';
-                                          }
-                                          if (_view == AuthView.createAccount &&
-                                              value.length < 8) {
-                                            return 'Use at least 8 characters';
-                                          }
-                                          return null;
-                                        },
-                                      ),
-                                    ],
-                                    if (_view == AuthView.createAccount) ...[
-                                      const SizedBox(height: 18),
-                                      _fieldLabel('Confirm password'),
-                                      TextFormField(
-                                        controller: _confirmPasswordController,
-                                        obscureText: true,
-                                        textInputAction: TextInputAction.done,
-                                        decoration: const InputDecoration(
-                                          hintText: 'Enter your password again',
-                                          prefixIcon: Icon(
-                                            Icons.lock_outline_rounded,
-                                          ),
-                                        ),
-                                        validator: (value) =>
-                                            value != _passwordController.text
-                                            ? 'Passwords do not match'
-                                            : null,
-                                      ),
-                                    ],
-                                    if (_view == AuthView.signIn) ...[
-                                      Align(
-                                        alignment: Alignment.centerRight,
-                                        child: TextButton(
-                                          onPressed: () =>
-                                              _setView(AuthView.forgotPassword),
-                                          child: const Text('Forgot password?'),
-                                        ),
-                                      ),
-                                    ] else
-                                      const SizedBox(height: 18),
-                                    const SizedBox(height: 8),
-                                    SizedBox(
-                                      height: 54,
-                                      child: FilledButton(
-                                        onPressed: _submit,
-                                        style: FilledButton.styleFrom(
-                                          backgroundColor: const Color(
-                                            0xFF315FEA,
-                                          ),
-                                          foregroundColor: Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                          ),
-                                          textStyle: const TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        child: Text(_submitLabel),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (_view == AuthView.forgotPassword) ...[
-                                const SizedBox(height: 12),
-                                TextButton.icon(
-                                  onPressed: () => _setView(AuthView.signIn),
-                                  icon: const Icon(Icons.arrow_back_rounded),
-                                  label: const Text('Back to sign in'),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
+        ],
+      ),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: const [_HomeContent(), _ExploreContent(), _AppointmentsContent(), _CalendarContent(), _ProfileContent()],
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (index) {
+          setState(() => _selectedIndex = index);
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home_rounded),
+            label: 'Home',
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildViewSelector() {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F4F9),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          _viewTab('Sign in', AuthView.signIn),
-          _viewTab('Create account', AuthView.createAccount),
+          NavigationDestination(
+            icon: Icon(Icons.explore_outlined),
+            selectedIcon: Icon(Icons.explore_rounded),
+            label: 'Explore',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.event_available_outlined),
+            selectedIcon: Icon(Icons.event_available_rounded),
+            label: 'Appointments',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.calendar_month_outlined),
+            selectedIcon: Icon(Icons.calendar_month_rounded),
+            label: 'Calendar',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline_rounded),
+            selectedIcon: Icon(Icons.person_rounded),
+            label: 'Profile',
+          ),
         ],
       ),
     );
   }
+}
 
-  Widget _viewTab(String label, AuthView view) {
-    final selected = _view == view;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => _setView(view),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 4),
+class _HomeContent extends StatelessWidget {
+  const _HomeContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: selected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(9),
-            boxShadow: selected
-                ? const [
-                    BoxShadow(
-                      color: Color(0x100D214A),
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ]
-                : null,
+            color: const Color(0xFF315FEA),
+            borderRadius: BorderRadius.circular(24),
           ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: selected
-                  ? const Color(0xFF243750)
-                  : const Color(0xFF7A8799),
-              fontSize: 13,
-              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-            ),
+          child: const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.public_rounded, color: Colors.white, size: 34),
+              SizedBox(height: 20),
+              Text(
+                'Welcome to the Testing Home Page',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
           ),
+        ),
+        const SizedBox(height: 24),
+        Text(
+          'Overview',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF14243A),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'This page will be the homepage, which will be changed in the future. Explore the app using the navigation bar below.',
+        ),
+      ],
+    );
+  }
+}
+
+class _ExploreContent extends StatelessWidget {
+  const _ExploreContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: const [
+        _ExploreCard(
+          title: 'Who we are?',
+          subtitle: 'Learn about FRM and its work in the community.',
+          icon: Icons.info_outline_rounded,
+        ),
+        SizedBox(height: 12),
+        _ExploreCard(
+          title: 'Services and support',
+          subtitle: 'Explore counseling, health, food pantry, and volunteering services.',
+          icon: Icons.volunteer_activism_outlined,
+        ),
+        SizedBox(height: 12),
+        _ExploreCard(
+          title: 'Contact information',
+          subtitle: 'Find the email, phone number, and address.',
+          icon: Icons.contact_mail_outlined,
+        ),
+      ],
+    );
+  }
+}
+
+class _ExploreCard extends StatelessWidget {
+  const _ExploreCard({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 0,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: CircleAvatar(
+          backgroundColor: const Color(0xFFEEF2FF),
+          foregroundColor: const Color(0xFF315FEA),
+          child: Icon(icon),
+        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(subtitle),
         ),
       ),
     );
   }
+}
 
-  Widget _fieldLabel(String label) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Color(0xFF293A50),
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
+class _AppointmentsContent extends StatelessWidget {
+  const _AppointmentsContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: const [
+        SizedBox(height: 24),
+        Text(
+          'Appointments',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF14243A),
+          ),
         ),
-      ),
+        SizedBox(height: 8),
+        Text(
+          'Appointment details will appear here.',
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+}
+
+class _CalendarContent extends StatelessWidget {
+  const _CalendarContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: const [
+        SizedBox(height: 24),
+        Text(
+          'Monthly Calendar',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF14243A),
+          ),
+        ),
+        SizedBox(height: 8),
+        Text(
+          'Calendar details will appear here.',
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfileContent extends StatelessWidget {
+  const _ProfileContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        const SizedBox(height: 24),
+        const CircleAvatar(
+          radius: 42,
+          backgroundColor: Color(0xFFDEE6FF),
+          child: Icon(Icons.person_rounded, size: 44, color: Color(0xFF315FEA)),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'Your profile',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF14243A),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Profile details will appear here.',
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 }

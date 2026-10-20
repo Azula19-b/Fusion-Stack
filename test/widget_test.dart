@@ -30,5 +30,31 @@ void main() {
     await tester.tap(find.text('Back to sign in'));
     await tester.pumpAndSettle();
     expect(find.text('Welcome back'), findsOneWidget);
+
+    testWidgets('Navigation Bar switches between pages', (tester) async {
+      tester.view.physicalSize = const Size(900, 1200);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(const MyApp());
+      expect(find.text('Home'), findsOneWidget);
+
+      await tester.tap(find.text('Explore'));
+      await tester.pumpAndSettle();
+      expect(find.text('Explore'), findsOneWidget);
+
+      await tester.tap(find.text('Appointments'));
+      await tester.pumpAndSettle();
+      expect(find.text('Appointments'), findsOneWidget);
+
+      await tester.tap(find.text('Calendar'));
+      await tester.pumpAndSettle();
+      expect(find.text('Calendar'), findsOneWidget);
+
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+      expect(find.text('Profile'), findsOneWidget);
+    }); 
   });
 }
