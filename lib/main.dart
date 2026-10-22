@@ -4,6 +4,7 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 
 import 'amplify_outputs.dart';
+import 'navigation.dart' show HomePage;
 import 'services/auth_service.dart';
 
 Future<void> _configureAmplify() async {
@@ -230,6 +231,12 @@ class _AuthPageState extends State<AuthPage> {
     }
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(result.message)));
+  }
+
+  void _openNavigation() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(builder: (_) => const HomePage()),
+    );
   }
 
   Future<void> _resendConfirmationCode() async {
@@ -554,7 +561,9 @@ class _AuthPageState extends State<AuthPage> {
                                     SizedBox(
                                       height: 54,
                                       child: FilledButton(
-                                        onPressed: _submit,
+                                        onPressed: _view == AuthView.signIn
+                                            ? _openNavigation
+                                            : _submit,
                                         style: FilledButton.styleFrom(
                                           backgroundColor: const Color(
                                             0xFF315FEA,
