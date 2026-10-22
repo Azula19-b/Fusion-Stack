@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frm_app/main.dart';
+import 'package:frm_app/navigation.dart';
 
 void main() {
   testWidgets('authentication screen switches between account flows', (
