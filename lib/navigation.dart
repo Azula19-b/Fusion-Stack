@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/calendar_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -55,7 +56,7 @@ class _HomePageState extends State<HomePage> {
       ),
       body: IndexedStack(
         index: _selectedIndex,
-        children: const [_HomeContent(), _ExploreContent(), _AppointmentsContent(), _CalendarContent(), _ProfileContent()],
+        children: const [_HomeContent(), _ExploreContent(), _AppointmentsContent(), CalendarScreen(), _ProfileContent()],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
@@ -224,34 +225,6 @@ class _AppointmentsContent extends StatelessWidget {
         SizedBox(height: 8),
         Text(
           'Appointment details will appear here.',
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-}
-
-class _CalendarContent extends StatelessWidget {
-  const _CalendarContent();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: const [
-        SizedBox(height: 24),
-        Text(
-          'Monthly Calendar',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF14243A),
-          ),
-        ),
-        SizedBox(height: 8),
-        Text(
-          'Calendar details will appear here.',
           textAlign: TextAlign.center,
         ),
       ],

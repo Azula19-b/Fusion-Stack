@@ -2,7 +2,6 @@ import 'package:amplify_auth_cognito/amplify_auth_cognito.dart'
     show AmplifyAuthCognito;
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:frm_app/screens/home_screen.dart';
 
 import 'amplify_outputs.dart';
 import 'navigation.dart' show HomePage;
@@ -159,7 +158,7 @@ class _AuthPageState extends State<AuthPage> {
     AuthView.confirmResetPassword => 'Reset password',
   };
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
     AppAuthResult result;
