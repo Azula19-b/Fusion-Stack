@@ -1,32 +1,6 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    const blue = Color(0xFF315FEA);
-
-    return MaterialApp(
-      title: 'Welcome to the Testing Home Page',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: blue,
-          primary: blue,
-          surface: Colors.white,
-        ),
-        scaffoldBackgroundColor: const Color(0xFFF4F7FC),
-      ),
-      home: const HomePage(),
-    );
-  }
-}
+import 'screens/home_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -38,24 +12,18 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
-  static const _titles = ['Home', 'Explore', 'Appointments', 'Calendar', 'Profile'];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_titles[_selectedIndex]),
-        actions: [
-          IconButton(
-            tooltip: 'Notifications',
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_none_rounded),
-          ),
-        ],
-      ),
       body: IndexedStack(
         index: _selectedIndex,
-        children: const [_HomeContent(), _ExploreContent(), _AppointmentsContent(), _CalendarContent(), _ProfileContent()],
+        children: const [
+          HomeScreen(),
+          _ExploreContent(),
+          _AppointmentsContent(),
+          _CalendarContent(),
+          _ProfileContent(),
+        ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
@@ -90,53 +58,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _HomeContent extends StatelessWidget {
-  const _HomeContent();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: const Color(0xFF315FEA),
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.public_rounded, color: Colors.white, size: 34),
-              SizedBox(height: 20),
-              Text(
-                'Welcome to the Testing Home Page',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'Overview',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF14243A),
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'This page will be the homepage, which will be changed in the future. Explore the app using the navigation bar below.',
-        ),
-      ],
     );
   }
 }
@@ -250,10 +171,7 @@ class _CalendarContent extends StatelessWidget {
           ),
         ),
         SizedBox(height: 8),
-        Text(
-          'Calendar details will appear here.',
-          textAlign: TextAlign.center,
-        ),
+        Text('Calendar details will appear here.', textAlign: TextAlign.center),
       ],
     );
   }

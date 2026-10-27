@@ -1,65 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:frm_app/screens/home_screen.dart';
 
-void main() {
-  runApp(const MyApp());
+import '../navigation.dart' show HomePage;
+import '../services/auth_service.dart';
+
+enum AuthView {
+  signIn,
+  createAccount,
+  forgotPassword,
+  confirmSignUp,
+  confirmResetPassword,
 }
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    const navy = Color(0xFF14243A);
-    const blue = Color(0xFF315FEA);
-
-    return MaterialApp(
-      title: 'Welcome',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: blue,
-          primary: blue,
-          surface: Colors.white,
-        ),
-        scaffoldBackgroundColor: const Color(0xFFF4F7FC),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: const Color(0xFFF7F9FC),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 17,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: blue, width: 1.5),
-          ),
-        ),
-        textTheme: const TextTheme(
-          headlineMedium: TextStyle(
-            color: navy,
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.7,
-          ),
-          bodyMedium: TextStyle(color: Color(0xFF68768A)),
-        ),
-      ),
-      home: const AuthPage(),
-    );
-  }
-}
-
-enum AuthView { signIn, createAccount, forgotPassword }
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -69,13 +19,34 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> {
+  final AuthService _authService = AuthService();
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _confirmationCodeController = TextEditingController();
   AuthView _view = AuthView.signIn;
   bool _hidePassword = true;
+  bool _isSignedIn = false;
+  bool _checkingSession = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSession();
+  }
+
+  Future<void> _checkSession() async {
+    final signedIn = await _authService.isSignedIn();
+
+    if (!mounted) return;
+
+    setState(() {
+      _isSignedIn = signedIn;
+      _checkingSession = false;
+    });
+  }
 
   @override
   void dispose() {
@@ -83,6 +54,7 @@ class _AuthPageState extends State<AuthPage> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _confirmationCodeController.dispose();
     super.dispose();
   }
 
@@ -90,6 +62,8 @@ class _AuthPageState extends State<AuthPage> {
     AuthView.signIn => 'Welcome back',
     AuthView.createAccount => 'Create your account',
     AuthView.forgotPassword => 'Reset your password',
+    AuthView.confirmSignUp => 'Verify your email',
+    AuthView.confirmResetPassword => 'Create a new password',
   };
 
   String get _subtitle => switch (_view) {
@@ -97,30 +71,134 @@ class _AuthPageState extends State<AuthPage> {
     AuthView.createAccount => 'A few details and you’ll be ready to go.',
     AuthView.forgotPassword =>
       'Enter the email address associated with your account.',
+    AuthView.confirmSignUp => 'Enter the verification code sent to your email.',
+    AuthView.confirmResetPassword =>
+      'Enter the code from your email and choose a new password.',
   };
 
   String get _submitLabel => switch (_view) {
     AuthView.signIn => 'Sign in',
     AuthView.createAccount => 'Create account',
     AuthView.forgotPassword => 'Send reset instructions',
+    AuthView.confirmSignUp => 'Verify account',
+    AuthView.confirmResetPassword => 'Reset password',
   };
 
-  void _submit() {
-    if (_view == AuthView.signIn) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute<void>(builder: (_) => const HomeScreen()),
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    AppAuthResult result;
+    switch (_view) {
+      case AuthView.signIn:
+        result = await _authService.signIn(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+        break;
+
+      case AuthView.createAccount:
+        result = await _authService.createAccount(
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+        break;
+
+      case AuthView.forgotPassword:
+        result = await _authService.resetPassword(
+          email: _emailController.text.trim(),
+        );
+        break;
+
+      case AuthView.confirmSignUp:
+        result = await _authService.confirmSignUp(
+          email: _emailController.text.trim(),
+          code: _confirmationCodeController.text.trim(),
+        );
+        break;
+
+      case AuthView.confirmResetPassword:
+        result = await _authService.confirmResetPassword(
+          email: _emailController.text.trim(),
+          newPassword: _passwordController.text,
+          confirmationCode: _confirmationCodeController.text.trim(),
+        );
+        break;
+    }
+    if (!mounted) return;
+    if (_view == AuthView.forgotPassword && result.success) {
+      setState(() {
+        _view = AuthView.confirmResetPassword;
+        _confirmationCodeController.clear();
+        _passwordController.clear();
+        _confirmPasswordController.clear();
+      });
+    } else if (result.requiresConfirmation) {
+      setState(() {
+        _view = AuthView.confirmSignUp;
+        _confirmationCodeController.clear();
+      });
+    } else if (_view == AuthView.confirmSignUp && result.success) {
+      setState(() {
+        _view = AuthView.signIn;
+        _confirmationCodeController.clear();
+      });
+    } else if (_view == AuthView.confirmResetPassword && result.success) {
+      setState(() {
+        _view = AuthView.signIn;
+        _confirmationCodeController.clear();
+        _passwordController.clear();
+        _confirmPasswordController.clear();
+      });
+    } else if (_view == AuthView.signIn && result.success) {
+      setState(() {
+        _isSignedIn = true;
+      });
+    }
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(result.message)));
+  }
+
+  void _openNavigation() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(builder: (_) => const HomePage()),
+    );
+  }
+
+  Future<void> _resendConfirmationCode() async {
+    final email = _emailController.text.trim();
+
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter your email address first.')),
       );
       return;
     }
 
-    if (!_formKey.currentState!.validate()) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Form validated. Connect an authentication service to continue.',
-        ),
-      ),
-    );
+    final result = await _authService.resendSignUpCode(email: email);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(result.message)));
+  }
+
+  Future<void> _signOut() async {
+    final result = await _authService.signOut();
+
+    if (!mounted) return;
+
+    if (result.success) {
+      setState(() {
+        _isSignedIn = false;
+        _view = AuthView.signIn;
+        _passwordController.clear();
+        _confirmPasswordController.clear();
+      });
+    }
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(result.message)));
   }
 
   void _setView(AuthView view) {
@@ -132,6 +210,37 @@ class _AuthPageState extends State<AuthPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_checkingSession) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (_isSignedIn) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('First Refuge Ministries')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.check_circle_outline, size: 72),
+              const SizedBox(height: 20),
+              const Text(
+                'You are signed in!',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Text('Temporary home screen'),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: _signOut,
+                icon: const Icon(Icons.logout),
+                label: const Text('Sign out'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -268,7 +377,34 @@ class _AuthPageState extends State<AuthPage> {
                                         return null;
                                       },
                                     ),
-                                    if (_view != AuthView.forgotPassword) ...[
+                                    if (_view == AuthView.confirmSignUp ||
+                                        _view ==
+                                            AuthView.confirmResetPassword) ...[
+                                      const SizedBox(height: 18),
+                                      _fieldLabel('Verification code'),
+                                      TextFormField(
+                                        controller: _confirmationCodeController,
+                                        keyboardType: TextInputType.number,
+                                        textInputAction: TextInputAction.done,
+                                        decoration: const InputDecoration(
+                                          hintText: 'Enter verification code',
+                                          prefixIcon: Icon(
+                                            Icons.verified_user_outlined,
+                                          ),
+                                        ),
+                                        validator: (value) {
+                                          final code = value?.trim() ?? '';
+                                          if (code.isEmpty) {
+                                            return 'Enter the verification code';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ],
+                                    if (_view == AuthView.signIn ||
+                                        _view == AuthView.createAccount ||
+                                        _view ==
+                                            AuthView.confirmResetPassword) ...[
                                       const SizedBox(height: 18),
                                       _fieldLabel('Password'),
                                       TextFormField(
@@ -303,7 +439,11 @@ class _AuthPageState extends State<AuthPage> {
                                           if (value == null || value.isEmpty) {
                                             return 'Enter your password';
                                           }
-                                          if (_view == AuthView.createAccount &&
+                                          if ((_view ==
+                                                      AuthView.createAccount ||
+                                                  _view ==
+                                                      AuthView
+                                                          .confirmResetPassword) &&
                                               value.length < 8) {
                                             return 'Use at least 8 characters';
                                           }
@@ -311,7 +451,9 @@ class _AuthPageState extends State<AuthPage> {
                                         },
                                       ),
                                     ],
-                                    if (_view == AuthView.createAccount) ...[
+                                    if (_view == AuthView.createAccount ||
+                                        _view ==
+                                            AuthView.confirmResetPassword) ...[
                                       const SizedBox(height: 18),
                                       _fieldLabel('Confirm password'),
                                       TextFormField(
@@ -345,7 +487,9 @@ class _AuthPageState extends State<AuthPage> {
                                     SizedBox(
                                       height: 54,
                                       child: FilledButton(
-                                        onPressed: _submit,
+                                        onPressed: _view == AuthView.signIn
+                                            ? _openNavigation
+                                            : _submit,
                                         style: FilledButton.styleFrom(
                                           backgroundColor: const Color(
                                             0xFF315FEA,
@@ -364,6 +508,15 @@ class _AuthPageState extends State<AuthPage> {
                                         child: Text(_submitLabel),
                                       ),
                                     ),
+                                    if (_view == AuthView.confirmSignUp) ...[
+                                      const SizedBox(height: 12),
+                                      TextButton(
+                                        onPressed: _resendConfirmationCode,
+                                        child: const Text(
+                                          'Resend verification code',
+                                        ),
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ),
