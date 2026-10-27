@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const navy = Color(0xFF14243A);
-    const blue = Color(0xFF315FEA);
+    const blue = HomeColors.missionBlue;
 
     return MaterialApp(
       title: 'Welcome',
@@ -159,7 +159,7 @@ class _AuthPageState extends State<AuthPage> {
     AuthView.confirmResetPassword => 'Reset password',
   };
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
     AppAuthResult result;
@@ -290,30 +290,7 @@ class _AuthPageState extends State<AuthPage> {
     }
 
     if (_isSignedIn) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('First Refuge Ministries')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.check_circle_outline, size: 72),
-              const SizedBox(height: 20),
-              const Text(
-                'You are signed in!',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              const Text('Temporary home screen'),
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: _signOut,
-                icon: const Icon(Icons.logout),
-                label: const Text('Sign out'),
-              ),
-            ],
-          ),
-        ),
-      );
+      return HomePage(onSignOut: _signOut);
     }
 
     return Scaffold(

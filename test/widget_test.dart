@@ -3,58 +3,44 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:frm_app/navigation.dart';
 
 void main() {
-  testWidgets('authentication screen switches between account flows', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(900, 1200);
+  void setPhoneViewport(WidgetTester tester) {
+    tester.view.physicalSize = const Size(430, 1800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
+  }
 
+  testWidgets('bottom navigation reaches Home, Appointments, and Profile', (
+    tester,
+  ) async {
+    setPhoneViewport(tester);
     await tester.pumpWidget(const MyApp());
-    expect(find.text('Welcome back'), findsOneWidget);
-    expect(find.text('Forgot password?'), findsOneWidget);
 
-    await tester.tap(find.text('Create account'));
+    expect(find.text('How can we help you today?'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.event_available_outlined));
     await tester.pumpAndSettle();
-    expect(find.text('Confirm password'), findsOneWidget);
-    expect(find.text('Create your account'), findsOneWidget);
+    expect(find.text('My Appointments'), findsOneWidget);
 
-    await tester.tap(find.text('Sign in').first);
+    await tester.tap(find.byIcon(Icons.person_outline_rounded));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Forgot password?'));
+    expect(find.text('My Profile'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('profile-back-button')));
     await tester.pumpAndSettle();
-    expect(find.text('Reset your password'), findsOneWidget);
-    expect(find.text('Send reset instructions'), findsOneWidget);
+    expect(find.text('How can we help you today?'), findsOneWidget);
+  });
 
-    await tester.tap(find.text('Back to sign in'));
+  testWidgets('Home appointment service card opens Appointments', (
+    tester,
+  ) async {
+    setPhoneViewport(tester);
+    await tester.pumpWidget(const MyApp());
+
+    final card = find.byKey(const Key('service-card-myAppointments'));
+    await tester.tap(card);
     await tester.pumpAndSettle();
-    expect(find.text('Welcome back'), findsOneWidget);
 
-    testWidgets('Navigation Bar switches between pages', (tester) async {
-      tester.view.physicalSize = const Size(900, 1200);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      await tester.pumpWidget(const MyApp());
-      expect(find.text('Home'), findsOneWidget);
-
-      await tester.tap(find.text('Explore'));
-      await tester.pumpAndSettle();
-      expect(find.text('Explore'), findsOneWidget);
-
-      await tester.tap(find.text('Appointments'));
-      await tester.pumpAndSettle();
-      expect(find.text('Appointments'), findsOneWidget);
-
-      await tester.tap(find.text('Calendar'));
-      await tester.pumpAndSettle();
-      expect(find.text('Calendar'), findsOneWidget);
-
-      await tester.tap(find.text('Profile'));
-      await tester.pumpAndSettle();
-      expect(find.text('Profile'), findsOneWidget);
-    }); 
+    expect(find.text('My Appointments'), findsOneWidget);
   });
 }

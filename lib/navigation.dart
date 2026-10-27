@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'screens/appointments_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/profile_screen.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -9,7 +13,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const blue = Color(0xFF315FEA);
+    const blue = HomeColors.missionBlue;
 
     return MaterialApp(
       title: 'Welcome to the Testing Home Page',
@@ -29,7 +33,9 @@ class MyApp extends StatelessWidget {
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, this.onSignOut});
+
+  final Future<void> Function()? onSignOut;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -37,25 +43,50 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  HomeLanguage _language = HomeLanguage.english;
 
-  static const _titles = ['Home', 'Explore', 'Appointments', 'Calendar', 'Profile'];
+  void _goHome() => setState(() => _selectedIndex = 0);
+
+  void _handleServiceSelection(HomeServiceType service) {
+    if (service == HomeServiceType.myAppointments) {
+      setState(() => _selectedIndex = 2);
+      return;
+    }
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text('This teammate-owned service screen is coming soon.'),
+        ),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_titles[_selectedIndex]),
-        actions: [
-          IconButton(
-            tooltip: 'Notifications',
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_none_rounded),
-          ),
-        ],
-      ),
       body: IndexedStack(
         index: _selectedIndex,
-        children: const [_HomeContent(), _ExploreContent(), _AppointmentsContent(), _CalendarContent(), _ProfileContent()],
+        children: [
+          HomeScreen(
+            initialLanguage: _language,
+            onLanguageChanged: (language) {
+              setState(() => _language = language);
+            },
+            onServiceSelected: _handleServiceSelection,
+          ),
+          const _ExploreContent(),
+          AppointmentsScreen(onBack: _goHome),
+          const _CalendarContent(),
+          ProfileScreen(
+            onBack: _goHome,
+            onSignOut: widget.onSignOut,
+            initialLanguage: _language,
+            onLanguageChanged: (language) {
+              setState(() => _language = language);
+            },
+          ),
+        ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
@@ -94,61 +125,26 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _HomeContent extends StatelessWidget {
-  const _HomeContent();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: const Color(0xFF315FEA),
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.public_rounded, color: Colors.white, size: 34),
-              SizedBox(height: 20),
-              Text(
-                'Welcome to the Testing Home Page',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'Overview',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF14243A),
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'This page will be the homepage, which will be changed in the future. Explore the app using the navigation bar below.',
-        ),
-      ],
-    );
-  }
-}
-
 class _ExploreContent extends StatelessWidget {
   const _ExploreContent();
 
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
       children: const [
+        SafeArea(
+          bottom: false,
+          child: Text(
+            'Explore',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: HomeColors.darkCharcoal,
+            ),
+          ),
+        ),
+        SizedBox(height: 18),
         _ExploreCard(
           title: 'Who we are?',
           subtitle: 'Learn about FRM and its work in the community.',
@@ -203,89 +199,28 @@ class _ExploreCard extends StatelessWidget {
   }
 }
 
-class _AppointmentsContent extends StatelessWidget {
-  const _AppointmentsContent();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: const [
-        SizedBox(height: 24),
-        Text(
-          'Appointments',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF14243A),
-          ),
-        ),
-        SizedBox(height: 8),
-        Text(
-          'Appointment details will appear here.',
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-}
-
 class _CalendarContent extends StatelessWidget {
   const _CalendarContent();
 
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
       children: const [
-        SizedBox(height: 24),
-        Text(
-          'Monthly Calendar',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF14243A),
+        SafeArea(
+          bottom: false,
+          child: Text(
+            'Calendar',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: HomeColors.darkCharcoal,
+            ),
           ),
         ),
-        SizedBox(height: 8),
+        SizedBox(height: 18),
         Text(
-          'Calendar details will appear here.',
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-}
-
-class _ProfileContent extends StatelessWidget {
-  const _ProfileContent();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        const SizedBox(height: 24),
-        const CircleAvatar(
-          radius: 42,
-          backgroundColor: Color(0xFFDEE6FF),
-          child: Icon(Icons.person_rounded, size: 44, color: Color(0xFF315FEA)),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Your profile',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF14243A),
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Profile details will appear here.',
-          textAlign: TextAlign.center,
+          'Calendar details will appear here when the teammate-owned Calendar View is integrated.',
         ),
       ],
     );

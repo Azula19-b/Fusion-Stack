@@ -52,6 +52,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void didUpdateWidget(covariant HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialLanguage != widget.initialLanguage &&
+        _language != widget.initialLanguage) {
+      _language = widget.initialLanguage;
+    }
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -610,8 +619,7 @@ class _ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final serviceCopy =
-        AppLocalizations.of(language).services[service.type]!;
+    final serviceCopy = AppLocalizations.of(language).services[service.type]!;
     final textTheme = Theme.of(context).textTheme;
 
     return Semantics(
