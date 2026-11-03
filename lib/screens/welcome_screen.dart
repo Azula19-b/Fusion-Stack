@@ -28,7 +28,6 @@ class _AuthPageState extends State<AuthPage> {
   final _confirmationCodeController = TextEditingController();
   AuthView _view = AuthView.signIn;
   bool _hidePassword = true;
-  bool _isSignedIn = false;
   bool _checkingSession = true;
 
   @override
@@ -42,10 +41,12 @@ class _AuthPageState extends State<AuthPage> {
 
     if (!mounted) return;
 
-    setState(() {
-      _isSignedIn = signedIn;
-      _checkingSession = false;
-    });
+    if (signedIn) {
+      _openNavigation();
+      return;
+    }
+
+    setState(() => _checkingSession = false);
   }
 
   @override
@@ -151,9 +152,7 @@ class _AuthPageState extends State<AuthPage> {
         _confirmPasswordController.clear();
       });
     } else if (_view == AuthView.signIn && result.success) {
-      setState(() {
-        _isSignedIn = true;
-      });
+      _openNavigation();
     }
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(result.message)));
@@ -161,8 +160,27 @@ class _AuthPageState extends State<AuthPage> {
 
   void _openNavigation() {
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(builder: (_) => const HomePage()),
+      MaterialPageRoute<void>(
+        builder: (_) => HomePage(onSignOut: _signOutFromDashboard),
+      ),
     );
+  }
+
+  Future<void> _signOutFromDashboard(BuildContext dashboardContext) async {
+    final result = await _authService.signOut();
+
+    if (!dashboardContext.mounted) return;
+
+    ScaffoldMessenger.of(
+      dashboardContext,
+    ).showSnackBar(SnackBar(content: Text(result.message)));
+
+    if (result.success) {
+      Navigator.of(dashboardContext).pushAndRemoveUntil<void>(
+        MaterialPageRoute<void>(builder: (_) => const AuthPage()),
+        (route) => false,
+      );
+    }
   }
 
   Future<void> _resendConfirmationCode() async {
@@ -183,24 +201,6 @@ class _AuthPageState extends State<AuthPage> {
         .showSnackBar(SnackBar(content: Text(result.message)));
   }
 
-  Future<void> _signOut() async {
-    final result = await _authService.signOut();
-
-    if (!mounted) return;
-
-    if (result.success) {
-      setState(() {
-        _isSignedIn = false;
-        _view = AuthView.signIn;
-        _passwordController.clear();
-        _confirmPasswordController.clear();
-      });
-    }
-
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(result.message)));
-  }
-
   void _setView(AuthView view) {
     setState(() {
       _view = view;
@@ -212,33 +212,6 @@ class _AuthPageState extends State<AuthPage> {
   Widget build(BuildContext context) {
     if (_checkingSession) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    if (_isSignedIn) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('First Refuge Ministries')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.check_circle_outline, size: 72),
-              const SizedBox(height: 20),
-              const Text(
-                'You are signed in!',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              const Text('Temporary home screen'),
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: _signOut,
-                icon: const Icon(Icons.logout),
-                label: const Text('Sign out'),
-              ),
-            ],
-          ),
-        ),
-      );
     }
 
     return Scaffold(
@@ -490,6 +463,8 @@ class _AuthPageState extends State<AuthPage> {
                                         onPressed: _view == AuthView.signIn
                                             ? _openNavigation
                                             : _submit,
+                                        // Previous behavior submitted credentials:
+                                        // onPressed: _submit,
                                         style: FilledButton.styleFrom(
                                           backgroundColor: const Color(
                                             0xFF315FEA,

@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, this.onSignOut});
+
+  final Future<void> Function(BuildContext context)? onSignOut;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -17,12 +19,12 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
-        children: const [
-          HomeScreen(),
-          _ExploreContent(),
-          _AppointmentsContent(),
-          _CalendarContent(),
-          _ProfileContent(),
+        children: [
+          const HomeScreen(),
+          const _ExploreContent(),
+          const _AppointmentsContent(),
+          const _CalendarContent(),
+          _ProfileContent(onSignOut: widget.onSignOut),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -178,7 +180,9 @@ class _CalendarContent extends StatelessWidget {
 }
 
 class _ProfileContent extends StatelessWidget {
-  const _ProfileContent();
+  const _ProfileContent({this.onSignOut});
+
+  final Future<void> Function(BuildContext context)? onSignOut;
 
   @override
   Widget build(BuildContext context) {
@@ -205,6 +209,14 @@ class _ProfileContent extends StatelessWidget {
           'Profile details will appear here.',
           textAlign: TextAlign.center,
         ),
+        if (onSignOut != null) ...[
+          const SizedBox(height: 24),
+          FilledButton.icon(
+            onPressed: () => onSignOut!(context),
+            icon: const Icon(Icons.logout),
+            label: const Text('Sign out'),
+          ),
+        ],
       ],
     );
   }
