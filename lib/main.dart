@@ -71,6 +71,7 @@ class MyApp extends StatelessWidget {
           bodyMedium: TextStyle(color: Color(0xFF68768A)),
         ),
       ),
+      home: const welcome.AuthPage(),
     );
   }
 }

@@ -14,7 +14,7 @@ void main() {
     tester,
   ) async {
     setPhoneViewport(tester);
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const MaterialApp(home: HomePage()));
 
     expect(find.text('How can we help you today?'), findsOneWidget);
 
@@ -35,7 +35,7 @@ void main() {
     tester,
   ) async {
     setPhoneViewport(tester);
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const MaterialApp(home: HomePage()));
 
     final card = find.byKey(const Key('service-card-myAppointments'));
     await tester.tap(card);
