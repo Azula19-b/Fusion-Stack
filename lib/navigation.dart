@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'screens/appointments_screen.dart';
+import 'screens/calendar_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/profile_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -74,7 +78,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const _ExploreContent(),
           AppointmentsScreen(onBack: _goHome),
-          const _CalendarContent(),
+          const CalendarScreen(),
           ProfileScreen(
             onBack: _goHome,
             onSignOut: widget.onSignOut == null
@@ -86,10 +90,6 @@ class _HomePageState extends State<HomePage> {
             },
           ),
         ],
-      ),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: const [_HomeContent(), _ExploreContent(), _AppointmentsContent(), _CalendarContent(), _ProfileContent()],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
@@ -198,95 +198,6 @@ class _ExploreCard extends StatelessWidget {
           child: Text(subtitle),
         ),
       ),
-    );
-  }
-}
-
-class _AppointmentsContent extends StatelessWidget {
-  const _AppointmentsContent();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: const [
-        SizedBox(height: 24),
-        Text(
-          'Appointments',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF14243A),
-          ),
-        ),
-        SizedBox(height: 8),
-        Text(
-          'Appointment details will appear here.',
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-}
-
-class _CalendarContent extends StatelessWidget {
-  const _CalendarContent();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: const [
-        SizedBox(height: 24),
-        Text(
-          'Monthly Calendar',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF14243A),
-          ),
-        ),
-        SizedBox(height: 8),
-        Text(
-          'Calendar details will appear here.',
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-}
-
-class _ProfileContent extends StatelessWidget {
-  const _ProfileContent();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        const SizedBox(height: 24),
-        const CircleAvatar(
-          radius: 42,
-          backgroundColor: Color(0xFFDEE6FF),
-          child: Icon(Icons.person_rounded, size: 44, color: Color(0xFF315FEA)),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Your profile',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF14243A),
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Profile details will appear here.',
-          textAlign: TextAlign.center,
-        ),
-      ],
     );
   }
 }
