@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'screens/appointments_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
@@ -35,7 +34,8 @@ class MyApp extends StatelessWidget {
 class HomePage extends StatefulWidget {
   const HomePage({super.key, this.onSignOut});
 
-  final Future<void> Function()? onSignOut;
+  final Future<void> Function(BuildContext context)? onSignOut;
+
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -86,6 +86,11 @@ class _HomePageState extends State<HomePage> {
               setState(() => _language = language);
             },
           ),
+          const HomeScreen(),
+          const _ExploreContent(),
+          const _AppointmentsScreen(),
+          const _CalendarContent(),
+          _ProfileContent(onSignOut: widget.onSignOut),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -218,10 +223,51 @@ class _CalendarContent extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(height: 18),
-        Text(
-          'Calendar details will appear here when the teammate-owned Calendar View is integrated.',
+        SizedBox(height: 8),
+        Text('Calendar details will appear here.', textAlign: TextAlign.center),
+      ],
+    );
+  }
+}
+
+class _ProfileContent extends StatelessWidget {
+  const _ProfileContent({this.onSignOut});
+
+  final Future<void> Function(BuildContext context)? onSignOut;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        const SizedBox(height: 24),
+        const CircleAvatar(
+          radius: 42,
+          backgroundColor: Color(0xFFDEE6FF),
+          child: Icon(Icons.person_rounded, size: 44, color: Color(0xFF315FEA)),
         ),
+        const SizedBox(height: 16),
+        Text(
+          'Your profile',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF14243A),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Profile details will appear here.',
+          textAlign: TextAlign.center,
+        ),
+        if (onSignOut != null) ...[
+          const SizedBox(height: 24),
+          FilledButton.icon(
+            onPressed: () => onSignOut!(context),
+            icon: const Icon(Icons.logout),
+            label: const Text('Sign out'),
+          ),
+        ],
       ],
     );
   }
