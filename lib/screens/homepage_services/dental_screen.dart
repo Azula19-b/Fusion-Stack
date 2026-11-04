@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
 
-import 'home_screen.dart' show HomeColors;
+import '../home_screen.dart' show HomeColors;
 
-class VolunteeringScreen extends StatelessWidget {
-  const VolunteeringScreen({
+class DentalScreen extends StatelessWidget {
+  const DentalScreen({
     super.key,
-    this.onFindOpportunities,
-    this.onViewSchedule,
+    this.onScheduleAppointment,
+    this.onViewAppointments,
     this.onContact,
   });
 
-  final VoidCallback? onFindOpportunities;
-  final VoidCallback? onViewSchedule;
+  final VoidCallback? onScheduleAppointment;
+  final VoidCallback? onViewAppointments;
   final VoidCallback? onContact;
 
-  void _showMessage(BuildContext context, String message) {
+  void _showNotConnectedMessage(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(
+        content: Text(message),
+      ),
     );
   }
 
@@ -30,7 +32,7 @@ class VolunteeringScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         title: const Text(
-          'Volunteering',
+          'Dental Care',
           style: TextStyle(
             color: HomeColors.darkCharcoal,
             fontWeight: FontWeight.w700,
@@ -48,70 +50,64 @@ class VolunteeringScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _buildWelcomeCard(context),
-
                     const SizedBox(height: 24),
 
                     const _SectionTitle(
-                      title: 'Volunteer Opportunities',
+                      title: 'Dental Services',
                       subtitle:
-                          'Find ways to support First Refuge Ministries and serve the community.',
+                          'Find the information you need before scheduling a dental visit.',
                     ),
-
                     const SizedBox(height: 12),
 
                     const _InfoCard(
-                      icon: Icons.volunteer_activism_outlined,
-                      title: 'Available Opportunities',
+                      icon: Icons.medical_services_outlined,
+                      title: 'Available Dental Services',
                       description:
-                          'Current volunteer opportunities and available roles will appear here.',
+                          'Dental services provided by First Refuge Ministries will appear here.',
                     ),
-
                     const SizedBox(height: 12),
 
                     const _InfoCard(
-                      icon: Icons.assignment_ind_outlined,
-                      title: 'Requirements & Orientation',
+                      icon: Icons.assignment_outlined,
+                      title: 'Eligibility & Required Information',
                       description:
-                          'Volunteer requirements, orientation information, and next steps will appear here.',
+                          'Eligibility requirements and any documents needed for your visit will appear here.',
                     ),
-
                     const SizedBox(height: 12),
 
                     const _InfoCard(
                       icon: Icons.location_on_outlined,
                       title: 'Location & Hours',
                       description:
-                          'Volunteer locations, available hours, and arrival information will appear here.',
+                          'Dental clinic location, operating hours, and arrival information will appear here.',
                     ),
-
                     const SizedBox(height: 24),
 
                     const _SectionTitle(
-                      title: 'Your Volunteer Schedule',
+                      title: 'Your Appointment',
                       subtitle:
-                          'Review upcoming volunteer activities or find a new opportunity.',
+                          'Schedule a dental visit or review an upcoming appointment.',
                     ),
-
                     const SizedBox(height: 12),
 
-                    _ScheduleCard(
-                      onFindOpportunities: () {
-                        if (onFindOpportunities != null) {
-                          onFindOpportunities!();
+                    _AppointmentCard(
+                      onSchedule: () {
+                        if (onScheduleAppointment != null) {
+                          onScheduleAppointment!();
                         } else {
-                          _showMessage(
+                          _showNotConnectedMessage(
                             context,
-                            'Volunteer opportunities will be available here once the volunteer system is connected.',
+                            'Dental scheduling will be available here once the scheduling system is connected.',
                           );
                         }
                       },
-                      onViewSchedule: () {
-                        if (onViewSchedule != null) {
-                          onViewSchedule!();
+                      onViewAppointments: () {
+                        if (onViewAppointments != null) {
+                          onViewAppointments!();
                         } else {
-                          _showMessage(
+                          _showNotConnectedMessage(
                             context,
-                            'Your volunteer schedule will appear here once volunteer data is connected.',
+                            'Your dental appointments will appear here once appointment data is connected.',
                           );
                         }
                       },
@@ -120,11 +116,10 @@ class VolunteeringScreen extends StatelessWidget {
                     const SizedBox(height: 24),
 
                     const _SectionTitle(
-                      title: 'Before You Volunteer',
+                      title: 'Before Your Visit',
                       subtitle:
-                          'Review helpful information before your volunteer activity.',
+                          'Review important information before your dental appointment.',
                     ),
-
                     const SizedBox(height: 12),
 
                     const _PreparationCard(),
@@ -136,7 +131,7 @@ class VolunteeringScreen extends StatelessWidget {
                         if (onContact != null) {
                           onContact!();
                         } else {
-                          _showMessage(
+                          _showNotConnectedMessage(
                             context,
                             'First Refuge Ministries contact information will be available here.',
                           );
@@ -176,14 +171,14 @@ class VolunteeringScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(
-              Icons.volunteer_activism_outlined,
+              Icons.health_and_safety_outlined,
               color: HomeColors.missionBlue,
               size: 30,
             ),
           ),
           const SizedBox(height: 18),
           const Text(
-            'Make a difference',
+            'Dental care made easier',
             style: TextStyle(
               color: HomeColors.darkCharcoal,
               fontSize: 24,
@@ -192,7 +187,7 @@ class VolunteeringScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Explore volunteer opportunities and find ways to support First Refuge Ministries and the community.',
+            'Access dental services, appointment information, and visit details from one place.',
             style: TextStyle(
               color: HomeColors.mutedText,
               fontSize: 15,
@@ -204,12 +199,12 @@ class VolunteeringScreen extends StatelessWidget {
             width: double.infinity,
             child: FilledButton.icon(
               onPressed: () {
-                if (onFindOpportunities != null) {
-                  onFindOpportunities!();
+                if (onScheduleAppointment != null) {
+                  onScheduleAppointment!();
                 } else {
-                  _showMessage(
+                  _showNotConnectedMessage(
                     context,
-                    'Volunteer opportunities will be available here once the volunteer system is connected.',
+                    'Dental scheduling will be available here once the scheduling system is connected.',
                   );
                 }
               },
@@ -224,9 +219,9 @@ class VolunteeringScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              icon: const Icon(Icons.search_rounded),
+              icon: const Icon(Icons.calendar_month_outlined),
               label: const Text(
-                'Find Volunteer Opportunities',
+                'Schedule Dental Appointment',
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
@@ -344,14 +339,14 @@ class _InfoCard extends StatelessWidget {
   }
 }
 
-class _ScheduleCard extends StatelessWidget {
-  const _ScheduleCard({
-    required this.onFindOpportunities,
-    required this.onViewSchedule,
+class _AppointmentCard extends StatelessWidget {
+  const _AppointmentCard({
+    required this.onSchedule,
+    required this.onViewAppointments,
   });
 
-  final VoidCallback onFindOpportunities;
-  final VoidCallback onViewSchedule;
+  final VoidCallback onSchedule;
+  final VoidCallback onViewAppointments;
 
   @override
   Widget build(BuildContext context) {
@@ -375,7 +370,7 @@ class _ScheduleCard extends StatelessWidget {
               ),
               SizedBox(width: 10),
               Text(
-                'Volunteer Schedule',
+                'Dental Appointment',
                 style: TextStyle(
                   color: HomeColors.darkCharcoal,
                   fontSize: 18,
@@ -401,7 +396,7 @@ class _ScheduleCard extends StatelessWidget {
                 ),
                 SizedBox(height: 10),
                 Text(
-                  'No upcoming volunteer activity to display',
+                  'No upcoming dental appointment to display',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: HomeColors.darkCharcoal,
@@ -410,7 +405,7 @@ class _ScheduleCard extends StatelessWidget {
                 ),
                 SizedBox(height: 5),
                 Text(
-                  'Your volunteer schedule will appear here when volunteer data is connected.',
+                  'Your appointment details will appear here when scheduling data is connected.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: HomeColors.mutedText,
@@ -426,7 +421,7 @@ class _ScheduleCard extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: onViewSchedule,
+                  onPressed: onViewAppointments,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: HomeColors.deepBlue,
                     side: const BorderSide(
@@ -439,13 +434,13 @@ class _ScheduleCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('View Schedule'),
+                  child: const Text('View Appointments'),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: FilledButton(
-                  onPressed: onFindOpportunities,
+                  onPressed: onSchedule,
                   style: FilledButton.styleFrom(
                     backgroundColor: HomeColors.missionBlue,
                     foregroundColor: Colors.white,
@@ -456,7 +451,7 @@ class _ScheduleCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Find Opportunities'),
+                  child: const Text('Schedule'),
                 ),
               ),
             ],
@@ -485,19 +480,19 @@ class _PreparationCard extends StatelessWidget {
         children: [
           _PreparationRow(
             icon: Icons.check_circle_outline,
-            title: 'Volunteer instructions',
+            title: 'Appointment instructions',
             description:
-                'Instructions for your volunteer activity will appear here.',
+                'Preparation instructions from First Refuge Ministries will appear here.',
           ),
           Divider(
             height: 28,
             color: HomeColors.border,
           ),
           _PreparationRow(
-            icon: Icons.badge_outlined,
-            title: 'Requirements',
+            icon: Icons.description_outlined,
+            title: 'Required documents',
             description:
-                'Any requirements or information needed before volunteering will be listed here.',
+                'Any documents needed for your dental visit will be listed here.',
           ),
           Divider(
             height: 28,
@@ -505,9 +500,9 @@ class _PreparationCard extends StatelessWidget {
           ),
           _PreparationRow(
             icon: Icons.notifications_none_rounded,
-            title: 'Volunteer reminders',
+            title: 'Appointment reminders',
             description:
-                'Reminder information for your scheduled volunteer activity will appear here.',
+                'Reminder information for your scheduled dental visit will appear here.',
           ),
         ],
       ),
@@ -596,7 +591,7 @@ class _HelpCard extends StatelessWidget {
                 ),
                 SizedBox(height: 5),
                 Text(
-                  'Contact First Refuge Ministries if you need help with volunteering or finding opportunities.',
+                  'Contact First Refuge Ministries if you need help with dental services or scheduling.',
                   style: TextStyle(
                     color: Color(0xFFDDE5EA),
                     fontSize: 13,

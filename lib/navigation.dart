@@ -3,6 +3,9 @@ import 'screens/appointments_screen.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/homepage_services/dental_screen.dart';
+import 'screens/homepage_services/counseling_screen.dart';
+import 'screens/homepage_services/volunteering_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -53,14 +56,55 @@ class _HomePageState extends State<HomePage> {
       setState(() => _selectedIndex = 2);
       return;
     }
-
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(
-          content: Text('This teammate-owned service screen is coming soon.'),
+    if (service == HomeServiceType.medicalCare) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Medical care services will be applied soon.'),
+          ),
+        );
+      return;
+    }
+    if (service == HomeServiceType.dentalCare) {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => DentalScreen(
+            onViewAppointments: () {
+              Navigator.of(context).pop();
+              setState(() => _selectedIndex = 2);
+            },
+          ),
         ),
       );
+      return;
+    }
+    if (service == HomeServiceType.counseling) {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => CounselingScreen(
+            onViewAppointments: () {
+              Navigator.of(context).pop();
+              setState(() => _selectedIndex = 2);
+            },
+          ),
+        ),
+      );
+      return;
+    }
+    if (service == HomeServiceType.volunteerOpportunities) {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => VolunteeringScreen(
+            onViewSchedule: () {
+              Navigator.of(context).pop();
+              setState(() => _selectedIndex = 2);
+            },
+          ),
+        ),
+      );
+      return;
+    }
   }
 
   @override
@@ -93,6 +137,15 @@ class _HomePageState extends State<HomePage> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
+        height: 72,
+        labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>(
+          (states) => TextStyle(
+            fontSize: states.contains(WidgetState.selected) ? 12 : 11,
+            fontWeight: states.contains(WidgetState.selected)
+                ? FontWeight.w700
+                : FontWeight.w500,
+          ),
+        ),
         onDestinationSelected: (index) {
           setState(() => _selectedIndex = index);
         },

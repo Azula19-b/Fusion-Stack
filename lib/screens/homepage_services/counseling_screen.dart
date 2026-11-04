@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'home_screen.dart' show HomeColors;
+import '../home_screen.dart' show HomeColors;
 
 class CounselingScreen extends StatelessWidget {
   const CounselingScreen({
